@@ -1,9 +1,9 @@
+// src/App.js
+import React from 'react';
+import Home from './pages/Home';
+
 function App() {
-  return (
-    <div className="text-2xl text-blue-600 p-4">
-      Hello PromptPal ✨
-    </div>
-  );
+  return <Home />;
 }
 
 export default App;
