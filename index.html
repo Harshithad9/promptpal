@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROMPTPAL PRO - AI Prompt Engineering Suite</title>
+    <meta name="description" content="Generate custom, optimized prompts for ChatGPT, Claude, Midjourney, and other AI tools. Professional prompt engineering made simple.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'pulse-slow': 'pulse 3s infinite',
+                        'bounce-gentle': 'bounceGentle 2s infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        bounceGentle: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-5px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="assets/styles.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 font-sans">
+    <!-- Skip to main content for screen readers -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-2 rounded-md z-50">
+        Skip to main content
+    </a>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2" aria-live="polite"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 hidden items-center justify-center">
+        <div class="bg-white rounded-lg p-8 max-w-sm mx-4 text-center animate-fade-in">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Generating Your Prompt</h3>
+            <p class="text-gray-600">AI is crafting the perfect prompt for you...</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200/50" role="banner">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <span class="text-3xl animate-bounce-gentle" role="img" aria-label="Sparkles">✨</span>
+                        <div class="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full animate-pulse-slow"></div>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                            PROMPTPAL PRO
+                        </h1>
+                        <p class="text-xs text-gray-500">AI Prompt Engineering Suite</p>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex items-center gap-4" role="navigation" aria-label="Main navigation">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-purple-100 text-purple-700" id="prompt-count">
+                            0 Prompts
+                        </span>
+                        <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-blue-100 text-blue-700" id="usage-count">
+                            0 Uses
+                        </span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button 
+                            id="export-btn"
+                            class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                            aria-label="Export your prompt data"
+                        >
+                            <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Export
+                        </button>
+
+                        <button 
+                            id="dark-mode-toggle"
+                            class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                            aria-label="Toggle dark mode"
+                        >
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                            </svg>
+                        </button>
+
+                        <a 
+                            href="https://github.com" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                            aria-label="View on GitHub (opens in new tab)"
+                        >
+                            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </nav>
+
+                <!-- Mobile Menu Button -->
+                <button 
+                    id="mobile-menu-btn"
+                    class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200"
+                    aria-expanded="false"
+                    aria-label="Toggle mobile menu"
+                >
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Mobile Menu -->
+            <nav id="mobile-menu" class="md:hidden mt-4 pt-4 border-t border-gray-200 hidden animate-slide-up" role="navigation" aria-label="Mobile navigation">
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-purple-100 text-purple-700" id="mobile-prompt-count">
+                            0 Prompts
+                        </span>
+                        <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-blue-100 text-blue-700" id="mobile-usage-count">
+                            0 Uses
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <button 
+                            id="mobile-export-btn"
+                            class="inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200"
+                        >
+                            <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Export Data
+                        </button>
+                        <button 
+                            id="mobile-dark-mode-toggle"
+                            class="inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200"
+                        >
+                            <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                            </svg>
+                            Dark Mode
+                        </button>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main-content" class="container mx-auto px-3 sm:px-4 py-4 sm:py-8" role="main">
+        <!-- Tab Navigation -->
+        <nav class="w-full max-w-2xl mx-auto mb-6 sm:mb-8" role="tablist" aria-label="Main sections">
+            <div class="grid grid-cols-2 sm:grid-cols-4 bg-white/80 backdrop-blur-sm rounded-lg p-1 shadow-sm">
+                <button 
+                    role="tab" 
+                    aria-selected="true" 
+                    aria-controls="generate-panel"
+                    id="generate-tab"
+                    class="tab-button active px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                    Generate
+                </button>
+                <button 
+                    role="tab" 
+                    aria-selected="false" 
+                    aria-controls="library-panel"
+                    id="library-tab"
+                    class="tab-button px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                    Library
+                </button>
+                <button 
+                    role="tab" 
+                    aria-selected="false" 
+                    aria-controls="analytics-panel"
+                    id="analytics-tab"
+                    class="tab-button px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 hidden sm:block"
+                >
+                    Analytics
+                </button>
+                <button 
+                    role="tab" 
+                    aria-selected="false" 
+                    aria-controls="settings-panel"
+                    id="settings-tab"
+                    class="tab-button px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 hidden sm:block"
+                >
+                    Settings
+                </button>
+            </div>
+
+            <!-- Mobile-only secondary tabs -->
+            <div class="sm:hidden mt-4 flex gap-2 justify-center">
+                <button 
+                    role="tab" 
+                    aria-selected="false" 
+                    aria-controls="analytics-panel"
+                    id="mobile-analytics-tab"
+                    class="tab-button px-4 py-2 text-xs rounded-full border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                    📊 Analytics
+                </button>
+                <button 
+                    role="tab" 
+                    aria-selected="false" 
+                    aria-controls="settings-panel"
+                    id="mobile-settings-tab"
+                    class="tab-button px-4 py-2 text-xs rounded-full border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                    ⚙️ Settings
+                </button>
+            </div>
+        </nav>
+
+        <!-- Tab Panels -->
+        <div class="tab-panels">
+            <!-- Generate Panel -->
+            <section id="generate-panel" role="tabpanel" aria-labelledby="generate-tab" class="tab-panel active">
+                <!-- Category Selection -->
+                <div id="category-selection" class="animate-fade-in">
+                    <div class="text-center space-y-6 mb-8">
+                        <div>
+                            <h2 class="text-3xl font-bold text-gray-900 mb-2">Choose Your AI Assistant</h2>
+                            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                                Select a specialized AI assistant to generate optimized prompts for your specific needs
+                            </p>
+                        </div>
+
+                        <div class="relative max-w-md mx-auto">
+                            <label for="category-search" class="sr-only">Search categories</label>
+                            <div class="relative">
+                                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                                <input
+                                    type="search"
+                                    id="category-search"
+                                    placeholder="Search categories..."
+                                    class="pl-10 w-full px-4 py-3 border border-gray-300 rounded-lg bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                                    aria-describedby="search-help"
+                                >
+                            </div>
+                            <div id="search-help" class="sr-only">Type to filter available AI assistant categories</div>
+                        </div>
+                    </div>
+
+                    <!-- Categories Grid -->
+                    <div id="categories-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" role="grid" aria-label="AI Assistant Categories">
+                        <!-- Categories will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Prompt Generation Workspace -->
+                <div id="prompt-workspace" class="hidden animate-fade-in">
+                    <!-- Back Button -->
+                    <div class="flex items-center gap-4 mb-8">
+                        <button 
+                            id="back-to-categories"
+                            class="inline-flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-md transition-all duration-200"
+                            aria-label="Go back to category selection"
+                        >
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                            <span class="hidden sm:inline">Back to Categories</span>
+                            <span class="sm:hidden">Back</span>
+                        </button>
+
+                        <div id="selected-category-info" class="flex items-center gap-4">
+                            <!-- Category info will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Workspace Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Form Section -->
+                        <section class="space-y-6" aria-labelledby="form-heading">
+                            <div class="bg-white/80 backdrop-blur-sm rounded-lg border-2 shadow-sm">
+                                <div class="p-6 border-b">
+                                    <h3 id="form-heading" class="text-lg font-semibold flex items-center gap-2">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                        Customize Your Prompt
+                                    </h3>
+                                </div>
+                                <div class="p-6">
+                                    <form id="prompt-form" class="space-y-6" novalidate>
+                                        <!-- Form fields will be populated by JavaScript -->
+                                    </form>
+
+                                    <button 
+                                        id="generate-prompt-btn"
+                                        type="button"
+                                        class="w-full mt-6 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transform hover:scale-105 disabled:hover:scale-100 disabled:cursor-not-allowed"
+                                        aria-describedby="generate-help"
+                                    >
+                                        <span class="flex items-center justify-center gap-2">
+                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                                            </svg>
+                                            <span id="generate-btn-text">Generate Prompt</span>
+                                        </span>
+                                    </button>
+                                    <div id="generate-help" class="sr-only">Click to generate an AI-optimized prompt based on your inputs</div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Generated Prompt & Preview Section -->
+                        <section class="space-y-6" aria-labelledby="output-heading">
+                            <!-- Generated Prompt Display -->
+                            <div id="generated-prompt-section" class="bg-white/80 backdrop-blur-sm rounded-lg border-2 shadow-sm hidden animate-fade-in">
+                                <div class="p-6 border-b">
+                                    <h3 id="output-heading" class="text-lg font-semibold flex items-center gap-2">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                                        </svg>
+                                        Generated Prompt
+                                    </h3>
+                                </div>
+                                <div class="p-6 space-y-4">
+                                    <div class="relative">
+                                        <label for="generated-prompt-text" class="sr-only">Generated prompt text</label>
+                                        <textarea
+                                            id="generated-prompt-text"
+                                            readonly
+                                            class="w-full min-h-[300px] p-4 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                            aria-describedby="prompt-description"
+                                        ></textarea>
+                                        <div id="prompt-description" class="sr-only">Your generated AI prompt ready to copy and use</div>
+                                    </div>
+
+                                    <!-- Action Buttons -->
+                                    <div class="flex flex-col sm:flex-row gap-3">
+                                        <button 
+                                            id="copy-prompt-btn"
+                                            class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                            aria-describedby="copy-help"
+                                        >
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                            </svg>
+                                            <span id="copy-btn-text">Copy</span>
+                                        </button>
+
+                                        <button 
+                                            id="save-prompt-btn"
+                                            class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                        >
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+                                            </svg>
+                                            Save
+                                        </button>
+
+                                        <button 
+                                            id="try-chatgpt-btn"
+                                            class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 transform hover:scale-105"
+                                        >
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                            </svg>
+                                            Try in ChatGPT
+                                        </button>
+                                    </div>
+                                    <div id="copy-help" class="sr-only">Copy the generated prompt to your clipboard</div>
+                                </div>
+                            </div>
+
+                            <!-- Prompt Preview -->
+                            <div id="prompt-preview" class="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-6">
+                                <h3 class="text-lg font-semibold text-purple-800 mb-4 flex items-center gap-2">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                    Prompt Preview
+                                </h3>
+
+                                <div class="grid grid-cols-3 gap-4 mb-4">
+                                    <div class="text-center">
+                                        <div id="completeness-percent" class="text-2xl font-bold text-purple-600">0%</div>
+                                        <div class="text-sm text-gray-600">Complete</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div id="estimated-length" class="text-2xl font-bold text-blue-600">200</div>
+                                        <div class="text-sm text-gray-600">Est. Words</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <span id="complexity-badge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                            Basic
+                                        </span>
+                                        <div class="text-sm text-gray-600 mt-1">Complexity</div>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span>Optimization Tips:</span>
+                                    </div>
+                                    <ul id="optimization-tips" class="text-sm text-gray-600 space-y-1 ml-6">
+                                        <li>• Fill in more fields for a more detailed prompt</li>
+                                    </ul>
+                                </div>
+
+                                <div class="flex items-center gap-2 text-sm text-gray-600 mt-4">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span>Estimated generation time: 2-3 seconds</span>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Library Panel -->
+            <section id="library-panel" role="tabpanel" aria-labelledby="library-tab" class="tab-panel hidden">
+                <div class="max-w-6xl mx-auto space-y-6">
+                    <div class="text-center py-16" id="empty-library">
+                        <div class="text-8xl mb-6" role="img" aria-label="Books">📚</div>
+                        <h3 class="text-2xl font-semibold mb-4">Your Prompt Library is Empty</h3>
+                        <p class="text-gray-600 mb-8 max-w-md mx-auto">
+                            Start generating and saving prompts to build your personal AI assistant library
+                        </p>
+                        <button 
+                            id="start-generating-btn"
+                            class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transform hover:scale-105"
+                        >
+                            Generate Your First Prompt
+                        </button>
+                    </div>
+
+                    <div id="library-content" class="hidden">
+                        <!-- Library content will be populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analytics Panel -->
+            <section id="analytics-panel" role="tabpanel" aria-labelledby="analytics-tab" class="tab-panel hidden">
+                <div class="max-w-xl mx-auto">
+                    <div class="bg-white/80 backdrop-blur-sm rounded-lg border shadow-sm p-8 text-center">
+                        <div class="flex items-center justify-center gap-2 mb-4">
+                            <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            <h3 class="text-xl font-semibold">Usage Analytics</h3>
+                        </div>
+                        <p class="text-lg text-gray-600 mb-2">Analytics dashboard coming soon 🚀</p>
+                        <p class="text-sm text-gray-500">Track prompt usage, favorites, and performance metrics once this feature is fully implemented.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Panel -->
+            <section id="settings-panel" role="tabpanel" aria-labelledby="settings-tab" class="tab-panel hidden">
+                <div class="max-w-xl mx-auto">
+                    <div class="bg-white/80 backdrop-blur-sm rounded-lg border shadow-sm">
+                        <div class="p-6 border-b">
+                            <h3 class="text-xl font-semibold flex items-center gap-2">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                App Settings
+                            </h3>
+                        </div>
+                        <div class="p-6 space-y-6">
+                            <!-- Auto-save toggle -->
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <label for="autosave-toggle" class="text-gray-700 font-medium">Auto-save data to localStorage</label>
+                                    <p class="text-sm text-gray-500">Automatically save your prompts and settings locally</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="autosave-toggle" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                </label>
+                            </div>
+
+                            <!-- Analytics toggle -->
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <label for="analytics-toggle" class="text-gray-700 font-medium">Show analytics tab</label>
+                                    <p class="text-sm text-gray-500">Display usage analytics and insights</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="analytics-toggle" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                </label>
+                            </div>
+
+                            <!-- Theme toggle -->
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <label for="theme-toggle" class="text-gray-700 font-medium">Dark mode</label>
+                                    <p class="text-sm text-gray-500">Switch between light and dark themes</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="theme-toggle" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white/80 backdrop-blur-sm border-t border-gray-200/50 mt-16" role="contentinfo">
+        <div class="container mx-auto px-4 py-8">
+            <div class="text-center">
+                <p class="text-gray-600 mb-2">
+                    Built with ❤️ for the AI community
+                </p>
+                <p class="text-sm text-gray-500">
+                    © 2024 PROMPTPAL PRO. Empowering creativity through AI.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="scripts/main.js"></script>
+</body>
+</html>
