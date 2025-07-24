@@ -14,6 +14,8 @@ window.signUp = function () {
     .then(userCredential => {
       alert("Signup successful! 🎉");
       console.log(userCredential.user);
+      // Optional: Redirect to dashboard after signup
+      window.location.href = "dashboard.html";
     })
     .catch(error => {
       alert(error.message);
@@ -29,6 +31,8 @@ window.login = function () {
     .then(userCredential => {
       alert("Login successful! ✅");
       console.log(userCredential.user);
+      // ✅ Redirect to dashboard
+      window.location.href = "dashboard.html";
     })
     .catch(error => {
       alert(error.message);
