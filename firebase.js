@@ -6,7 +6,7 @@ const firebaseConfig = {
   authDomain: "promptpal-3a580.firebaseapp.com",
   projectId: "promptpal-3a580",
   storageBucket: "promptpal-3a580.firebasestorage.app",
-  messagingSenderId: "681352536413098",
+  messagingSenderId: "681352536413",
   appId: "1:681352536413:web:ef9629e7bca26cfbc608b4",
   measurementId: "G-3FS6PGZRYE"
 };
